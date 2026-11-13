@@ -13,7 +13,10 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "testnet:setup": "tsx scripts/testnet/setup-accounts.ts",
     "testnet:deploy": "tsx scripts/testnet/deploy-contract.ts",
-    "testnet:settle": "tsx scripts/testnet/settle-replay.ts"
+    "testnet:settle": "tsx scripts/testnet/settle-replay.ts",
+    "verify": "npm run typecheck && npm test && npm run sim",
+    "contract:test": "cd contracts/berry && cargo test",
+    "contract:build": "cd contracts/berry && cargo near build non-reproducible-wasm"
   },
   "engines": {
     "node": ">=20"

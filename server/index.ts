@@ -49,7 +49,8 @@ const runner = new GameRunner({
   llm,
   llmBots: process.env.LLM_BOTS ? process.env.LLM_BOTS.split(",").map((s) => s.trim()) : undefined,
   accountSuffix,
-  autoRestartMs: Number(process.env.AUTO_RESTART_MS ?? 20000),
+  // On testnet one deployment hosts one game (balances carry on chain), so no auto-restart.
+  autoRestartMs: CHAIN_MODE === "testnet" ? undefined : Number(process.env.AUTO_RESTART_MS ?? 20000),
   log: (m) => console.log(m),
 });
 await runner.newGame();
@@ -91,6 +92,7 @@ app.post("/api/control", async (req, res) => {
   else if (action === "resume") runner.setPaused(false);
   else if (action === "speed") runner.setSpeed(Number(value));
   else if (action === "step") await runner.step();
+  else if (action === "new" && CHAIN_MODE === "testnet") return res.status(400).json({ ok: false, error: "one game per contract deployment on testnet" });
   else if (action === "new") await runner.newGame(value !== undefined ? Number(value) : runner.state.config.seed + 1);
   else return res.status(400).json({ ok: false });
   res.json({ ok: true, meta: runner.meta() });
