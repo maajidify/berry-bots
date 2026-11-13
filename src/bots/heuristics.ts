@@ -165,7 +165,7 @@ const greedy: Strategy = (ctx) => {
 
 const artist: Strategy = (ctx) => {
   const { state, bot } = ctx;
-  setBudget(ctx, 0.5);
+  setBudget(ctx, 0.4);
   respond(ctx, (o) => o.kind !== "hire" || o.amount >= amt(20));
   const shape = strawberryPixels(bot.home.x, bot.home.y, 2);
   const want = new Map<number, number>();
@@ -196,12 +196,16 @@ const artist: Strategy = (ctx) => {
     );
     buy(ctx, frame, 14, 20);
   }
-  let worst: Bot | undefined;
-  let worstN = 0;
-  for (const [o, c] of damagers) if (c > worstN) [worst, worstN] = [state.bots[o - 1], c];
-  if (worst && worstN >= 8 && !hasTreatyWith(ctx, worst.id)) {
-    if (ctx.round % 6 === 0) offer(ctx, { to: worst.id, kind: "peace", amount: amt(Math.min(25, 4 + worstN / 4)), rounds: 15, note: "please leave my berry alone" });
-    else if (ctx.round % 6 === 3 && worst.id !== "blade") offer(ctx, { to: "blade", kind: "hire", amount: amt(14), rounds: 8, victim: worst.id, note: "defend the art" });
+  // buy protection: offer peace to the two worst vandals, hire the mercenary against persistent ones
+  const ranked = [...damagers.entries()].sort((a, b) => b[1] - a[1]).map(([o, c]) => [state.bots[o - 1], c] as const);
+  const [worst, worstN] = ranked[0] ?? [undefined, 0];
+  for (const [vandal, count] of ranked.slice(0, 2)) {
+    if (count < 6 || hasTreatyWith(ctx, vandal.id)) continue;
+    if (vandal.personality === "troll" && ctx.round % 4 === 2 && bot.balance > amt(20)) {
+      offer(ctx, { to: "blade", kind: "hire", amount: amt(10), rounds: 8, victim: vandal.id, note: "defend the art" });
+    } else {
+      offer(ctx, { to: vandal.id, kind: "peace", amount: amt(Math.min(20, 3 + count / 5)), rounds: 20, note: "please leave my berry alone" });
+    }
   }
   think(ctx, `Strawberry ${pct}% complete. Repainting ${n} pixels.${worst ? ` ${worst.name} is vandalising it (${worstN} px).` : ""}`);
   if (worst && worstN >= 8) say(ctx, 0.35, [`${worst.name}, my berry is not your canvas 😤`, "Art is suffering. Who will defend it?", `Repairing ${worst.name}'s mess again...`], worst.id);

@@ -18,7 +18,7 @@ const arg = (name: string) => {
   const i = args.indexOf(`--${name}`);
   return i >= 0 ? args[i + 1] : undefined;
 };
-const seed = Number(arg("seed") ?? 2020);
+const seed = Number(arg("seed") ?? 7);
 const rounds = Number(arg("rounds") ?? 120);
 const useLlm = args.includes("--llm");
 const out = arg("out");
@@ -75,4 +75,11 @@ if (out) {
 if (mismatches) process.exit(1);
 if (args.includes("--curve")) {
   for (const h of runner.state.token.history.filter((_, i) => i % 5 === 0)) console.log(`r${h.round}\tsupply ${fmt(h.supply)}\trate ${h.rate}\tpainted ${h.painted}\tburn ${fmt(h.burned)}\tmint ${fmt(h.minted)}`);
+}
+if (args.includes("--art")) {
+  const { strawberryPixels } = await import("../src/bots/shapes");
+  const a = runner.state.bots.find((b) => b.personality === "artist")!;
+  const px = strawberryPixels(a.home.x, a.home.y, 2);
+  const ok = px.filter((p) => { const i = p.y * 64 + p.x; return runner.state.board.owner[i] === a.index && runner.state.board.color[i] === p.color; }).length;
+  console.log(`strawberry intact: ${ok}/${px.length}`);
 }

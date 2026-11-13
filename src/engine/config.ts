@@ -1,7 +1,7 @@
 import { GameConfig, UNIT } from "./types";
 
 export const DEFAULT_CONFIG: GameConfig = {
-  seed: 2020,
+  seed: 7,
   width: 64,
   height: 64,
   rounds: 120,
