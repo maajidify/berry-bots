@@ -15,15 +15,17 @@ export const DEFAULT_CONFIG: GameConfig = {
   maxOffersPerRound: 2,
   offerTtl: 3,
   maxTreatyRounds: 30,
+  maxDealAmount: 100 * UNIT,
   maxChatLength: 140,
   landValue: 1 * UNIT,
   emission: {
-    initialRate: 60, // 0.06 BERRY per pixel per round
-    minRate: 5,
-    maxRate: 200,
-    calmThreshold: 0.004, // < ~16 pixels painted on a 64x64 board
+    initialRate: 10, // 0.010 BERRY per pixel per round // 0.06 BERRY per pixel per round
+    minRate: 2,
+    maxRate: 30,
+    calmRatio: 0.8, // burn < 80% of mint => calm
     calmRoundsToHalve: 3,
-    hotThreshold: 0.03, // > ~123 pixels painted
+    hotRatio: 1.5, // burn > 150% of mint => frenzy
+    frenzyMinPaint: 0.01,
     hotFactor: 1.25,
   },
 };

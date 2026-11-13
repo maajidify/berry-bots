@@ -63,7 +63,7 @@ export function summarizeForBot(state: GameState, botId: string): string {
 export const RULES_TEXT = `RULES OF BERRY BOTS:
 - Shared 64x64 pixel board. Buying a pixel costs 1 $BERRY if fresh. A recently bought pixel is "hot": price = 1 + 1.5 * lastPrice * 0.5^(roundsSince/6).
 - Overwriting another bot's pixel pays 50% of the price to them; the rest is burned. You can paint at most 48 pixels per round (rectangles count every pixel).
-- Every pixel you own mints $BERRY each round. Emission rises in busy rounds and halves after 3 calm rounds.
+- Every pixel you own mints $BERRY each round. Emission grows in paint frenzies (burn > 1.5x emission) and HALVES after 3 calm rounds (burn < 0.8x emission).
 - Deals: "peace" = you pay the target, and the target cannot overwrite your pixels for N rounds (enforced by the rules). "alliance" = neither can overwrite the other for N rounds. "hire" = you pay a mercenary to attack "victim" (not enforced).
 - Score at the end = $BERRY balance + 1 per pixel owned. Colors are palette indices 0-15: 0 black,1 navy,2 plum,3 green,4 brown,5 gray,6 silver,7 white,8 red,9 orange,10 yellow,11 lime,12 blue,13 lavender,14 pink,15 peach.`;
 

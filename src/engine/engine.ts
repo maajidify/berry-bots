@@ -183,7 +183,7 @@ export function applyRound(state: GameState, actions: BotAction[]): RoundResult 
   const cfg = state.config;
   const rand = mulberry32(deriveSeed(cfg.seed, "round", round));
   const events: GameEvent[] = [];
-  const ledger: RoundLedger = { round, mints: {}, burns: {}, transfers: [], boardHash: "" };
+  const ledger: RoundLedger = { round, mints: {}, burns: {}, transfers: [], deals: [], boardHash: "" };
   const transferMap = new Map<string, Transfer>();
   const addTransfer = (from: string, to: string, amount: number, reason: Transfer["reason"]) => {
     if (amount <= 0) return;
@@ -234,7 +234,7 @@ export function applyRound(state: GameState, actions: BotAction[]): RoundResult 
       payee.balance += offer.amount;
       payer.stats.dealsPaid += offer.amount;
       payee.stats.dealsReceived += offer.amount;
-      addTransfer(payer.id, payee.id, offer.amount, "deal");
+      if (offer.amount > 0) ledger.deals.push({ from: payer.id, to: payee.id, amount: offer.amount, reason: "deal" });
       offer.status = "accepted";
       const treaty: Treaty = {
         id: state.nextId++,
@@ -357,24 +357,25 @@ export function applyRound(state: GameState, actions: BotAction[]): RoundResult 
   state.token.minted += mintedThisRound;
   state.token.totalSupply += mintedThisRound;
 
-  // 6. supply reacts to activity
+  // 6. supply reacts to the community: calm board => emission halves, paint frenzy => emission grows
+  const burnedThisRound = Object.values(ledger.burns).reduce((s, v) => s + v, 0);
   const frac = painted / (cfg.width * cfg.height);
+  const ratio = burnedThisRound / Math.max(1, mintedThisRound);
   const em = cfg.emission;
-  if (frac < em.calmThreshold) {
+  if (ratio < em.calmRatio) {
     state.token.calmStreak++;
     if (state.token.calmStreak >= em.calmRoundsToHalve && state.token.rate > em.minRate) {
       state.token.rate = Math.max(em.minRate, Math.floor(state.token.rate / 2));
       state.token.calmStreak = 0;
-      emit({ type: "halving", text: `🌙 The board went quiet. $BERRY emission halved to ${(state.token.rate / 1000).toFixed(3)} per pixel.` });
+      emit({ type: "halving", text: `🌙 Calm board: paint burned less than emission for ${em.calmRoundsToHalve} rounds. $BERRY emission HALVED to ${(state.token.rate / 1000).toFixed(3)}/px.` });
     }
   } else {
     state.token.calmStreak = 0;
-    if (frac > em.hotThreshold && state.token.rate < em.maxRate) {
+    if (ratio > em.hotRatio && frac >= em.frenzyMinPaint && state.token.rate < em.maxRate) {
       state.token.rate = Math.min(em.maxRate, Math.ceil(state.token.rate * em.hotFactor));
-      emit({ type: "frenzy", text: `🔥 Paint frenzy (${painted} px)! Emission up to ${(state.token.rate / 1000).toFixed(3)} per pixel.` });
+      emit({ type: "frenzy", text: `🔥 Paint frenzy: ${painted} px painted, burn ${(ratio).toFixed(1)}x emission. $BERRY emission up to ${(state.token.rate / 1000).toFixed(3)}/px.` });
     }
   }
-  const burnedThisRound = Object.values(ledger.burns).reduce((s, v) => s + v, 0);
   state.token.history.push({
     round,
     supply: state.token.totalSupply,
@@ -431,7 +432,7 @@ function validateOffer(state: GameState, from: string, cmd: OfferCmd, round: num
   if (!["peace", "alliance", "hire"].includes(cmd.kind)) return;
   const to = botById(state, cmd.to);
   if (!to || to.id === from) return;
-  const amount = clampInt(cmd.amount, 0, proposer.balance);
+  const amount = clampInt(cmd.amount, 0, Math.min(proposer.balance, cfg.maxDealAmount));
   const rounds = clampInt(cmd.rounds, 1, cfg.maxTreatyRounds);
   if (amount === undefined || rounds === undefined) return;
   let victim: string | undefined;

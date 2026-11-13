@@ -24,12 +24,13 @@ export function readWhispers(state: GameState, bot: Bot): WhisperIntent | undefi
   for (const w of list) {
     const t = w.text.toLowerCase();
     const named = findBot(state, t, bot.id);
-    if (named && /(attack|hit|raid|crush|destroy|troll|paint over|go after|take)/.test(t)) {
-      intent.target = named.id;
-      notes.push(`hit ${named.name}`);
-    } else if (named && /(ally|peace|friend|truce|team up|alliance|protect)/.test(t)) {
+    const peace = /(ally|peace|friend|truce|team up|alliance|protect)/.test(t);
+    if (named && peace) {
       intent.ally = named.id;
       notes.push(`make peace with ${named.name}`);
+    } else if (named && /(attack|hit|raid|crush|destroy|paint over|go after|take|vandal)/.test(t)) {
+      intent.target = named.id;
+      notes.push(`hit ${named.name}`);
     }
     if (/(aggressive|all in|go big|spend|faster|yolo)/.test(t)) {
       intent.aggression = 1.6;

@@ -21,12 +21,13 @@ export interface EmissionConfig {
   initialRate: number;
   minRate: number;
   maxRate: number;
-  /** fraction of the board painted in a round below which the round counts as "calm" */
-  calmThreshold: number;
+  /** a round is "calm" when burned/minted falls below this (paint is not keeping up with emission) */
+  calmRatio: number;
   /** consecutive calm rounds that trigger a halving */
   calmRoundsToHalve: number;
-  /** fraction of the board painted in a round above which the round counts as a "frenzy" */
-  hotThreshold: number;
+  /** a round is a "frenzy" when burned/minted exceeds this and at least `frenzyMinPaint` of the board was painted */
+  hotRatio: number;
+  frenzyMinPaint: number;
   /** multiplier applied in a frenzy round (e.g. 1.25) */
   hotFactor: number;
 }
@@ -48,6 +49,8 @@ export interface GameConfig {
   maxOffersPerRound: number;
   offerTtl: number;
   maxTreatyRounds: number;
+  /** largest single deal payment; mirrors the contract's max_bot_pay cap */
+  maxDealAmount: number;
   maxChatLength: number;
   landValue: number;
   emission: EmissionConfig;
@@ -240,7 +243,10 @@ export interface RoundLedger {
   round: number;
   mints: Record<string, number>;
   burns: Record<string, number>;
+  /** overwrite payouts (painter -> previous owner), aggregated per pair */
   transfers: Transfer[];
+  /** deal payments in the exact order they happened (each is one bot_pay on chain) */
+  deals: Transfer[];
   boardHash: string;
 }
 

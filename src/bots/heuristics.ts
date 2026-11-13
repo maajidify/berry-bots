@@ -151,7 +151,9 @@ const greedy: Strategy = (ctx) => {
   respond(ctx, (o) => (o.kind === "peace" ? o.amount >= amt(3) : o.kind === "alliance"));
   const target = ctx.whisper?.target;
   if (target) attack(ctx, target, 0.6);
-  const cands = scan(ctx, (_i, owner) => owner !== bot.index, homeKey(ctx, 0.05));
+  const home = homeKey(ctx, 0.05);
+  // prefers empty land; overwriting others costs a "drama premium" in its head
+  const cands = scan(ctx, (_i, owner) => owner !== bot.index, (idx, price) => home(idx, price) + (state.board.owner[idx] ? 1.5 * UNIT : 0));
   const n = buy(ctx, cands, bot.color);
   const leader = leaderOtherThanMe(ctx);
   if (leader && ctx.round % 15 === 7 && bot.balance > amt(60)) {
@@ -159,12 +161,11 @@ const greedy: Strategy = (ctx) => {
   }
   think(ctx, `Cheapest land first: grabbing ${n} pixels.${leader ? ` Watching ${leader.name}.` : ""}`);
   say(ctx, 0.12, ["Land is the only asset that yields. 🍌→🍓", "Buy the floor, collect the berries.", `${bot.pixels} pixels and counting.`]);
-  void state;
 };
 
 const artist: Strategy = (ctx) => {
   const { state, bot } = ctx;
-  setBudget(ctx, 0.75);
+  setBudget(ctx, 0.5);
   respond(ctx, (o) => o.kind !== "hire" || o.amount >= amt(20));
   const shape = strawberryPixels(bot.home.x, bot.home.y, 2);
   const want = new Map<number, number>();
