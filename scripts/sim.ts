@@ -13,6 +13,11 @@ import { leaderboard } from "../src/engine/engine";
 import type { RoundLedger } from "../src/engine/types";
 import { GameRunner } from "../src/runner";
 
+try {
+  (process as any).loadEnvFile?.(".env");
+} catch {
+  /* optional */
+}
 const args = process.argv.slice(2);
 const arg = (name: string) => {
   const i = args.indexOf(`--${name}`);

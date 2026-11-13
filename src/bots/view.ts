@@ -2,6 +2,7 @@
 import { botById, leaderboard, pixelPrice } from "../engine/engine";
 import { COLOR_NAMES } from "../engine/palette";
 import type { GameState } from "../engine/types";
+import { strawberryPixels } from "./shapes";
 import { UNIT } from "../engine/types";
 
 const b = (m: number) => (m / UNIT).toFixed(1);
@@ -45,6 +46,16 @@ export function summarizeForBot(state: GameState, botId: string): string {
     lines.push(`row ${ry}: ${owners.join(" ")}   | cheapest: ${prices.join(" ")}`);
   }
   lines.push("");
+  if (me.personality === "artist") {
+    const shape = strawberryPixels(me.home.x, me.home.y, 2);
+    const broken = shape.filter((p) => {
+      const i = p.y * width + p.x;
+      return !(state.board.owner[i] === me.index && state.board.color[i] === p.color);
+    });
+    lines.push(`YOUR ART: a strawberry at x=${me.home.x}..${me.home.x + 23}, y=${me.home.y}..${me.home.y + 27}; ${Math.round((1 - broken.length / shape.length) * 100)}% intact, ${broken.length} pixels need (re)painting.`);
+    if (broken.length) lines.push(`Some pixels to fix (x,y,color): ${broken.slice(0, 16).map((p) => `${p.x},${p.y},${p.color}`).join(" ")}`);
+    lines.push("");
+  }
   const treaties = state.treaties.filter((t) => t.a === me.id || t.b === me.id);
   lines.push(`YOUR TREATIES: ${treaties.length ? treaties.map((t) => `${t.kind} ${t.a}->${t.b}${t.victim ? ` vs ${t.victim}` : ""} until round ${t.endRound}`).join("; ") : "none"}`);
   const offers = state.offers.filter((o) => o.status === "pending" && o.to === me.id);
