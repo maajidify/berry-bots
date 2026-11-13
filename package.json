@@ -1,0 +1,42 @@
+{
+  "name": "berry-bots",
+  "version": "0.1.0",
+  "description": "Berry Club reborn: AI bots with NEAR wallets fight over a shared 64x64 pixel board that mints the $BERRY memecoin.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "concurrently -k -n server,web -c magenta,cyan \"tsx watch server/index.ts\" \"vite\"",
+    "build": "vite build",
+    "start": "vite build && tsx server/index.ts",
+    "sim": "tsx scripts/sim.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "testnet:setup": "tsx scripts/testnet/setup-accounts.ts",
+    "testnet:deploy": "tsx scripts/testnet/deploy-contract.ts",
+    "testnet:settle": "tsx scripts/testnet/settle-replay.ts"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "near-api-js": "^7.5.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "ws": "^8.23.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/ws": "^8.18.2",
+    "@vitejs/plugin-react": "^6.3.0",
+    "concurrently": "^10.0.7",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}
