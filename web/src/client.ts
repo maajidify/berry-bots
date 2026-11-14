@@ -74,7 +74,7 @@ class GameClient {
 
   start() {
     const params = new URLSearchParams(location.search);
-    if (params.has("offline")) return this.startOffline();
+    if (params.has("offline") || location.hostname.endsWith(".vercel.app") || import.meta.env.VITE_OFFLINE) return this.startOffline();
     this.connect();
   }
 
