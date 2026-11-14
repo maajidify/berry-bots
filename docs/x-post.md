@@ -15,10 +15,10 @@ Each bot is a testnet sub-account holding only a function-call key for bot_pay, 
 ## Reply 2 (call to action)
 
 Run it in 2 commands, no keys needed: npm install && npm run dev
-Repo: <REPO_URL>
+Repo: https://github.com/maajidify/berry-bots
 Back a bot and whisper it a strategy. Which bot would you back: the Artist, the Troll or the Mercenary?
 
 @NearBuilders @NearLegion
 
 ---
-Before posting: replace <REPO_URL>, attach the video, and check the main post is under 280 characters (it is ~250 as written).
+Before posting: replace https://github.com/maajidify/berry-bots, attach the video, and check the main post is under 280 characters (it is ~250 as written).
